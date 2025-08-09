@@ -1,12 +1,27 @@
 import { getState, setPace, setRations, advanceDay, rest } from '../state/GameState.js';
 import { showEventModal } from './EventModal.js';
 import events from '../data/events.json' assert { type: 'json' };
+import { getImage, getMeta } from '../systems/assets.js';
 
 const eventMap = Object.fromEntries(events.map((e) => [e.id, e]));
 
 export function showTravelScreen() {
   const state = getState();
   document.body.innerHTML = '';
+
+  const bg = document.createElement('div');
+  bg.id = 'travel-bg';
+  bg.className = 'scene-bg';
+  const bgImg = getImage('scenes.travel');
+  const bgMeta = getMeta('scenes.travel');
+  if (bgImg && bgMeta) {
+    bg.style.width = bgMeta.w + 'px';
+    bg.style.height = bgMeta.h + 'px';
+    bgImg.classList.add('pixelated');
+    bg.appendChild(bgImg);
+  }
+  document.body.appendChild(bg);
+
   const main = document.createElement('main');
   main.id = 'travel-screen';
   main.innerHTML = `
@@ -36,7 +51,7 @@ export function showTravelScreen() {
     </section>
     <section id="inventory">
       <h2>Inventory</h2>
-      <p>Food: <span id="food"></span> lbs</p>
+      <p><span id="food-icon" class="img-slot"></span> Food: <span id="food"></span> lbs</p>
     </section>
     <section id="log-section">
       <h2>Log</h2>
@@ -50,6 +65,16 @@ export function showTravelScreen() {
     </section>
   `;
   document.body.appendChild(main);
+
+  const foodIcon = main.querySelector('#food-icon');
+  const foodImg = getImage('ui.icon_food');
+  const foodMeta = getMeta('ui.icon_food');
+  if (foodIcon && foodImg && foodMeta) {
+    foodIcon.style.width = foodMeta.w + 'px';
+    foodIcon.style.height = foodMeta.h + 'px';
+    foodImg.classList.add('pixelated');
+    foodIcon.appendChild(foodImg);
+  }
 
   const paceSel = main.querySelector('#pace');
   const rationSel = main.querySelector('#rations');
@@ -121,4 +146,3 @@ export function showTravelScreen() {
   render();
   checkEvent();
 }
-

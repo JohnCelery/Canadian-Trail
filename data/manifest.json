@@ -1,0 +1,34 @@
+{
+  "ui": {
+    "icon_food": {
+      "src": "assets/img/ui/icon_food.png",
+      "src2x": "assets/img/ui/icon_food@2x.png",
+      "w": 16,
+      "h": 16
+    }
+  },
+  "scenes": {
+    "title": {
+      "src": "assets/img/scene/title.png",
+      "src2x": "assets/img/scene/title@2x.png",
+      "w": 320,
+      "h": 200
+    },
+    "travel": {
+      "src": "assets/img/scene/travel.png",
+      "src2x": "assets/img/scene/travel@2x.png",
+      "w": 320,
+      "h": 200
+    }
+  },
+  "sprites": {
+    "deer": {
+      "src": "assets/img/sprites/deer.png",
+      "src2x": "assets/img/sprites/deer@2x.png",
+      "frameWidth": 32,
+      "frameHeight": 32,
+      "frames": 4,
+      "fps": 8
+    }
+  }
+}
