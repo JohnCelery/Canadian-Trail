@@ -1,6 +1,8 @@
 [
-  {"id": "oxen", "name": "Oxen", "price": 40},
-  {"id": "food", "name": "Food", "price": 0.2},
-  {"id": "clothes", "name": "Clothes", "price": 10},
-  {"id": "bullets", "name": "Bullets", "price": 2}
+  {"id": "food", "name": "Food", "unit": "lbs", "basePrice": 0.2},
+  {"id": "bullets", "name": "Bullets", "unit": "box", "basePrice": 2},
+  {"id": "medicine", "name": "Medicine", "unit": "bottle", "basePrice": 5},
+  {"id": "clothes", "name": "Clothes", "unit": "set", "basePrice": 10},
+  {"id": "spare_parts", "name": "Spare Parts", "unit": "ea", "basePrice": 15},
+  {"id": "oxen", "name": "Oxen", "unit": "head", "basePrice": 40}
 ]

@@ -1,7 +1,18 @@
 [
-  {"mile": 0, "name": "Fort McPherson"},
-  {"mile": 120, "name": "Red River"},
-  {"mile": 300, "name": "Fort Edmonton"},
-  {"mile": 550, "name": "Rocky Pass"},
-  {"mile": 800, "name": "Pacific Camp"}
+  {"id":"independence","name":"Independence","mile":0,"services":{"shop":true},"talk":["The trail begins here."]},
+  {"id":"kansas_river","name":"Kansas River Crossing","mile":102,"services":{"river":true},"talk":["The water runs swift this spring."]},
+  {"id":"fort_kearny","name":"Fort Kearny","mile":318,"services":{"shop":true},"talk":["Supplies are dear out here."]},
+  {"id":"chimney_rock","name":"Chimney Rock","mile":554,"services":{},"talk":["That rock points the way west."]},
+  {"id":"fort_laramie","name":"Fort Laramie","mile":640,"services":{"shop":true},"talk":["Soldiers trade news for coffee."]},
+  {"id":"independence_rock","name":"Independence Rock","mile":800,"services":{},"talk":["Names of many travelers mark the stone."]},
+  {"id":"south_pass","name":"South Pass","mile":910,"services":{},"talk":["It's all downhill from here, they say."]},
+  {"id":"fort_bridger","name":"Fort Bridger","mile":1030,"services":{"shop":true},"talk":["Jim Bridger charges a pretty penny."]},
+  {"id":"soda_springs","name":"Soda Springs","mile":1130,"services":{},"talk":["Bubbles tickle the nose."]},
+  {"id":"fort_hall","name":"Fort Hall","mile":1170,"services":{"shop":true},"talk":["Trappers swap tall tales here."]},
+  {"id":"snake_river","name":"Snake River Crossing","mile":1400,"services":{"river":true},"talk":["Many wagons have tipped here."]},
+  {"id":"fort_boise","name":"Fort Boise","mile":1520,"services":{"shop":true},"talk":["The fort is barely more than a few huts."]},
+  {"id":"blue_mountains","name":"Blue Mountains","mile":1740,"services":{},"talk":["The climb taxes the teams."]},
+  {"id":"fort_walla_walla","name":"Fort Walla Walla","mile":1820,"services":{"shop":true},"talk":["Mission folk offer fresh bread."]},
+  {"id":"the_dalles","name":"The Dalles","mile":1900,"services":{"river":true,"shop":true},"talk":["You may raft from here if you dare."]},
+  {"id":"willamette_valley","name":"Willamette Valley","mile":2000,"services":{},"talk":["Green hills welcome the weary."]}
 ]

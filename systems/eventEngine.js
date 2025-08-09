@@ -110,6 +110,8 @@ export function applyEffects(state, effects = [], ctx = {}) {
       case 'distance': {
         const miles = eff.delta || 0;
         state.milesTraveled += miles;
+        state.progress = state.progress || { milesTraveled: state.milesTraveled, landmarkIndex: 0 };
+        state.progress.milesTraveled = state.milesTraveled;
         state.milesRemaining = Math.max(0, state.milesRemaining - miles);
         log(`Distance changed by ${miles} miles.`);
         break;

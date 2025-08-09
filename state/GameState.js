@@ -2,6 +2,8 @@ import { travelDay, restDay } from '../systems/travel.js';
 import { eligibleEvents, pickWeighted, startEvent as engineStartEvent, applyEffects, nextStage as engineNextStage } from '../systems/eventEngine.js';
 import events from '../data/events.json' assert { type: 'json' };
 
+import { checkArrival, landmarks } from "../systems/landmarks.js";
+
 export let state = null;
 let rng = Math.random;
 
@@ -19,6 +21,7 @@ const defaultParty = [
   { id: 'martha', name: 'Martha', age: 3, health: 100, statuses: [] },
   { id: 'rusty', name: 'Rusty', age: 1, health: 100, statuses: [] }
 ];
+const totalMiles = landmarks[landmarks.length - 1].mile;
 
 const storage = typeof localStorage !== 'undefined'
   ? localStorage
@@ -59,25 +62,32 @@ function computeSeason(dateStr) {
   return 'Fall';
 }
 
-export function startNewGame(profession = 'Farmer', seed = Date.now()) {
+export function startNewGame(profession = "Farmer", seed = Date.now()) {
   const funds = professionFunds[profession] || professionFunds.Farmer;
   state = {
     day: 1,
-    date: '1848-03-01',
-    season: 'Spring',
+    date: "1848-03-01",
+    season: "Spring",
     profession,
     inventory: {
       food: 100,
+      bullets: 0,
+      medicine: 0,
+      clothes: 0,
+      spare_parts: 0,
+      oxen: 0,
       money: funds
     },
     party: defaultParty.map((p) => ({ ...p })),
     milesTraveled: 0,
-    milesRemaining: 2000,
-    pace: 'Steady',
-    rations: 'Normal',
+    milesRemaining: totalMiles,
+    progress: { milesTraveled: 0, landmarkIndex: 0 },
+    pace: "Steady",
+    rations: "Normal",
     log: [],
     rngSeed: seed,
     activeEvent: null,
+    activeLandmark: null,
     risks: {},
     morale: 0,
     mapFlags: {},
@@ -85,13 +95,18 @@ export function startNewGame(profession = 'Farmer', seed = Date.now()) {
     meta: { daysSinceLastEvent: 0 }
   };
   rng = createRNG(seed);
-  addLog('Game started', true);
+  addLog("Game started", true);
+  const arrival = checkArrival(state);
+  if (arrival.arrived) {
+    state.activeLandmark = { id: arrival.landmark.id, index: arrival.index };
+    addLog(`Arrived at ${arrival.landmark.name}.`, true);
+  }
   saveGame();
   return state;
 }
 
 export function continueGame() {
-  const data = storage.getItem('gameState');
+  const data = storage.getItem("gameState");
   if (!data) return null;
   state = JSON.parse(data);
   state.activeEvent = state.activeEvent || null;
@@ -103,9 +118,20 @@ export function continueGame() {
   state.party.forEach((p) => {
     p.statuses = p.statuses || [];
   });
+  state.progress = state.progress || { milesTraveled: state.milesTraveled || 0, landmarkIndex: state.progress ? state.progress.landmarkIndex || 0 : 0 };
+  state.progress.milesTraveled = state.milesTraveled || state.progress.milesTraveled || 0;
+  state.activeLandmark = state.activeLandmark || null;
+  state.inventory.food = state.inventory.food || 0;
+  state.inventory.money = state.inventory.money || 0;
+  state.inventory.bullets = state.inventory.bullets || 0;
+  state.inventory.medicine = state.inventory.medicine || 0;
+  state.inventory.clothes = state.inventory.clothes || 0;
+  state.inventory.spare_parts = state.inventory.spare_parts || 0;
+  state.inventory.oxen = state.inventory.oxen || 0;
   rng = createRNG(state.rngSeed);
   return state;
 }
+
 
 export function setPace(pace) {
   state.pace = pace;
@@ -137,7 +163,11 @@ export function advanceDay() {
   incrementDate(1);
   state.meta.daysSinceLastEvent += 1;
   addLog(`Traveled ${moved} miles.`, true);
-  if (!state.activeEvent) {
+  const arr = checkArrival(state);
+  if (arr.arrived) {
+    state.activeLandmark = { id: arr.landmark.id, index: arr.index };
+    addLog(`Arrived at ${arr.landmark.name}.`, true);
+  } else if (!state.activeEvent) {
     const chance = 0.2 + 0.1 * Math.min(state.meta.daysSinceLastEvent, 3);
     if (random() < chance) {
       const elig = eligibleEvents(state, events);
@@ -186,6 +216,11 @@ export function setActiveEvent(evt) {
 export function endEvent() {
   state.activeEvent = null;
   state.meta.daysSinceLastEvent = 0;
+  saveGame();
+}
+
+export function closeLandmark() {
+  state.activeLandmark = null;
   saveGame();
 }
 

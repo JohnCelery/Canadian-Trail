@@ -1,6 +1,8 @@
 import { getState, setPace, setRations, advanceDay, rest } from '../state/GameState.js';
 import { showEventModal } from './EventModal.js';
 import events from '../data/events.json' assert { type: 'json' };
+import { getNextLandmark, milesToNext, landmarks } from "../systems/landmarks.js";
+import { showLandmarkScreen } from "./LandmarkScreen.js";
 import { getImage, getMeta } from '../systems/assets.js';
 
 const eventMap = Object.fromEntries(events.map((e) => [e.id, e]));
@@ -28,6 +30,7 @@ export function showTravelScreen() {
     <section id="top">
       <div id="date"></div>
       <div id="progress-bar"><div id="progress"></div></div>
+      <div id="next-landmark"></div>
       <div id="settings">
         <label>Pace
           <select id="pace">
@@ -95,12 +98,14 @@ export function showTravelScreen() {
     advanceDay();
     render();
     checkEvent();
+    checkLandmark();
   });
   main.querySelector('#rest-btn').addEventListener('click', () => {
     const days = parseInt(prompt('Rest how many days?', '1'), 10) || 1;
     rest(days);
     render();
     checkEvent();
+    checkLandmark();
   });
 
   function render() {
@@ -109,6 +114,13 @@ export function showTravelScreen() {
     const total = s.milesTraveled + s.milesRemaining;
     const pct = total ? (s.milesTraveled / total) * 100 : 0;
     main.querySelector('#progress').style.width = pct + '%';
+    const next = getNextLandmark(s);
+    const nextDiv = main.querySelector('#next-landmark');
+    if (next) {
+      nextDiv.textContent = `Next landmark: ${next.name} — ${milesToNext(s)} miles`;
+    } else {
+      nextDiv.textContent = 'End of trail';
+    }
 
     const list = main.querySelector('#party-list');
     list.innerHTML = '';
@@ -127,7 +139,7 @@ export function showTravelScreen() {
     });
     logDiv.scrollTop = logDiv.scrollHeight;
 
-    const disabled = !!s.activeEvent;
+    const disabled = !!s.activeEvent || !!s.activeLandmark;
     main.querySelector('#travel-btn').disabled = disabled;
     main.querySelector('#rest-btn').disabled = disabled;
   }
@@ -143,6 +155,19 @@ export function showTravelScreen() {
     });
   }
 
+  function checkLandmark() {
+    const s = getState();
+    if (!s.activeLandmark) return;
+    if (document.getElementById("landmark-modal")) return;
+    const lm = landmarks.find(l => l.id === s.activeLandmark.id);
+    if (lm) {
+      showLandmarkScreen({ ...lm, index: s.activeLandmark.index }, () => {
+        render();
+      });
+    }
+  }
+
   render();
   checkEvent();
+  checkLandmark();
 }

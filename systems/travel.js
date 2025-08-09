@@ -17,6 +17,8 @@ export function travelDay(state) {
 
   const miles = Math.round(15 * paceMultiplier[state.pace]);
   state.milesTraveled += miles;
+  state.progress = state.progress || { milesTraveled: 0, landmarkIndex: 0 };
+  state.progress.milesTraveled = state.milesTraveled;
   state.milesRemaining = Math.max(0, state.milesRemaining - miles);
 
   const foodNeeded = rationRates[state.rations] * state.party.length;
