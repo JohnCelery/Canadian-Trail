@@ -1,4 +1,4 @@
-import { rest, addLog, closeLandmark } from '../state/GameState.js';
+import { rest, addLog, closeLandmark, getState, enterRiver } from '../state/GameState.js';
 import { random } from '../state/GameState.js';
 import { showShopScreen } from './ShopScreen.js';
 import { openRiverModal } from './RiverModal.js';
@@ -37,10 +37,10 @@ export function showLandmarkScreen(landmark, onClose) {
     servicesDiv.appendChild(document.createTextNode('Shop available. '));
     actionsDiv.appendChild(b); buttons.push(b);
   }
-  if (landmark.services.river) {
+  if (landmark.river) {
     const b = document.createElement('button');
     b.textContent = 'River';
-    b.addEventListener('click', () => openRiverModal());
+    b.addEventListener('click', () => { enterRiver(landmark.id); openRiverModal(landmark); });
     servicesDiv.appendChild(document.createTextNode('River nearby. '));
     actionsDiv.appendChild(b); buttons.push(b);
   }
@@ -90,4 +90,8 @@ export function showLandmarkScreen(landmark, onClose) {
 
   trapFocus();
   if (buttons.length) buttons[0].focus();
+  const gs = getState();
+  if (gs.activeRiver && gs.activeRiver.landmarkId === landmark.id) {
+    openRiverModal(landmark);
+  }
 }

@@ -88,6 +88,7 @@ export function startNewGame(profession = "Farmer", seed = Date.now()) {
     rngSeed: seed,
     activeEvent: null,
     activeLandmark: null,
+    activeRiver: null,
     risks: {},
     morale: 0,
     mapFlags: {},
@@ -115,6 +116,7 @@ export function continueGame() {
   state.mapFlags = state.mapFlags || {};
   state.epitaphs = state.epitaphs || {};
   state.meta = state.meta || { daysSinceLastEvent: 0 };
+  state.activeRiver = state.activeRiver || null;
   state.party.forEach((p) => {
     p.statuses = p.statuses || [];
   });
@@ -221,6 +223,16 @@ export function endEvent() {
 
 export function closeLandmark() {
   state.activeLandmark = null;
+  saveGame();
+}
+
+export function enterRiver(landmarkId) {
+  state.activeRiver = { landmarkId };
+  saveGame();
+}
+
+export function exitRiver() {
+  state.activeRiver = null;
   saveGame();
 }
 
