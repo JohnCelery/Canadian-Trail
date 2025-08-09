@@ -1,0 +1,9 @@
+{
+  "name": "canadian-trail",
+  "version": "0.0.1",
+  "description": "Canadian Trail static web project",
+  "scripts": {
+    "dev": "python3 -m http.server 5173 || python -m http.server 5173 || npx http-server -p 5173",
+    "test": "node tests/run.js"
+  }
+}
