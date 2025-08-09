@@ -1,13 +1,21 @@
+import { startNewGame, continueGame } from './state/GameState.js';
+import { showTravelScreen } from './ui/TravelScreen.js';
+
 function init() {
   const newGameBtn = document.getElementById('new-game');
   const continueBtn = document.getElementById('continue');
 
   newGameBtn.addEventListener('click', () => {
-    console.log('New Game selected');
+    startNewGame('Farmer');
+    showTravelScreen();
   });
 
   continueBtn.addEventListener('click', () => {
-    console.log('Continue selected');
+    if (continueGame()) {
+      showTravelScreen();
+    } else {
+      alert('No saved game');
+    }
   });
 }
 

@@ -1,1 +1,4 @@
-[]
+[
+  {"id": "deer", "name": "Deer", "speed": 5, "yield": 40},
+  {"id": "rabbit", "name": "Rabbit", "speed": 8, "yield": 5}
+]
