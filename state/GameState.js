@@ -1,4 +1,6 @@
 import { travelDay, restDay } from '../systems/travel.js';
+import { eligibleEvents, pickWeighted, startEvent as engineStartEvent, applyEffects, nextStage as engineNextStage } from '../systems/eventEngine.js';
+import events from '../data/events.json' assert { type: 'json' };
 
 export let state = null;
 let rng = Math.random;
@@ -10,12 +12,12 @@ const professionFunds = {
 };
 
 const defaultParty = [
-  { name: 'Merri-Ellen', age: 30, health: 100 },
-  { name: 'Mike', age: 32, health: 100 },
-  { name: 'Ros', age: 9, health: 100 },
-  { name: 'Jess', age: 6, health: 100 },
-  { name: 'Martha', age: 3, health: 100 },
-  { name: 'Rusty', age: 1, health: 100 }
+  { id: 'merri', name: 'Merri-Ellen', age: 30, health: 100, statuses: [] },
+  { id: 'mike', name: 'Mike', age: 32, health: 100, statuses: [] },
+  { id: 'ros', name: 'Ros', age: 9, health: 100, statuses: [] },
+  { id: 'jess', name: 'Jess', age: 6, health: 100, statuses: [] },
+  { id: 'martha', name: 'Martha', age: 3, health: 100, statuses: [] },
+  { id: 'rusty', name: 'Rusty', age: 1, health: 100, statuses: [] }
 ];
 
 const storage = typeof localStorage !== 'undefined'
@@ -74,7 +76,13 @@ export function startNewGame(profession = 'Farmer', seed = Date.now()) {
     pace: 'Steady',
     rations: 'Normal',
     log: [],
-    rngSeed: seed
+    rngSeed: seed,
+    activeEvent: null,
+    risks: {},
+    morale: 0,
+    mapFlags: {},
+    epitaphs: {},
+    meta: { daysSinceLastEvent: 0 }
   };
   rng = createRNG(seed);
   addLog('Game started', true);
@@ -86,6 +94,15 @@ export function continueGame() {
   const data = storage.getItem('gameState');
   if (!data) return null;
   state = JSON.parse(data);
+  state.activeEvent = state.activeEvent || null;
+  state.risks = state.risks || {};
+  state.morale = state.morale || 0;
+  state.mapFlags = state.mapFlags || {};
+  state.epitaphs = state.epitaphs || {};
+  state.meta = state.meta || { daysSinceLastEvent: 0 };
+  state.party.forEach((p) => {
+    p.statuses = p.statuses || [];
+  });
   rng = createRNG(state.rngSeed);
   return state;
 }
@@ -118,7 +135,19 @@ export function advanceDay() {
   travelDay(state);
   const moved = state.milesTraveled - before;
   incrementDate(1);
+  state.meta.daysSinceLastEvent += 1;
   addLog(`Traveled ${moved} miles.`, true);
+  if (!state.activeEvent) {
+    const chance = 0.2 + 0.1 * Math.min(state.meta.daysSinceLastEvent, 3);
+    if (random() < chance) {
+      const elig = eligibleEvents(state, events);
+      if (elig.length) {
+        const ev = pickWeighted(random, elig, 'weight');
+        engineStartEvent(state, ev);
+        addLog(ev.intro, true);
+      }
+    }
+  }
   saveGame();
 }
 
@@ -126,7 +155,19 @@ export function rest(days = 1) {
   for (let i = 0; i < days; i++) {
     restDay(state);
     incrementDate(1);
+    state.meta.daysSinceLastEvent += 1;
     addLog('Rested.', true);
+    if (!state.activeEvent) {
+      const chance = 0.2 + 0.1 * Math.min(state.meta.daysSinceLastEvent, 3);
+      if (random() < chance) {
+        const elig = eligibleEvents(state, events);
+        if (elig.length) {
+          const ev = pickWeighted(random, elig, 'weight');
+          engineStartEvent(state, ev);
+          addLog(ev.intro, true);
+        }
+      }
+    }
   }
   saveGame();
 }
@@ -136,6 +177,58 @@ export function random() {
   saveGame();
   return val;
 }
+
+export function setActiveEvent(evt) {
+  state.activeEvent = evt;
+  saveGame();
+}
+
+export function endEvent() {
+  state.activeEvent = null;
+  state.meta.daysSinceLastEvent = 0;
+  saveGame();
+}
+
+export function chooseEventChoice(choiceId) {
+  if (!state.activeEvent) return;
+  const ctx = { log: (m) => addLog(m, true), rng: random, events: eventsById, endEvent };
+  const event = eventsById[state.activeEvent.id];
+  const stage = event.stages.find((s, i) => (s.id ?? i) === state.activeEvent.stageId);
+  if (!stage) return;
+  if (stage.followupRoll && !stage.choices) {
+    const roll = random();
+    let acc = 0;
+    let picked = stage.followupRoll[stage.followupRoll.length - 1];
+    for (const opt of stage.followupRoll) {
+      acc += opt.chance;
+      if (roll <= acc) {
+        picked = opt;
+        break;
+      }
+    }
+    if (picked.textOnRoll) addLog(picked.textOnRoll, true);
+    if (picked.effects) applyEffects(state, picked.effects, ctx);
+    if (picked.next) {
+      engineNextStage(state, picked.next, ctx);
+    } else {
+      endEvent();
+    }
+    saveGame();
+    return;
+  }
+  const choice = stage.choices.find((c) => c.id === choiceId);
+  if (!choice) return;
+  addLog(choice.text, true);
+  if (choice.effects) applyEffects(state, choice.effects, ctx);
+  if (choice.next) {
+    engineNextStage(state, choice.next, ctx);
+  } else {
+    endEvent();
+  }
+  saveGame();
+}
+
+const eventsById = Object.fromEntries(events.map((e) => [e.id, e]));
 
 export function getState() {
   return state;

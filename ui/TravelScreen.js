@@ -1,4 +1,8 @@
 import { getState, setPace, setRations, advanceDay, rest } from '../state/GameState.js';
+import { showEventModal } from './EventModal.js';
+import events from '../data/events.json' assert { type: 'json' };
+
+const eventMap = Object.fromEntries(events.map((e) => [e.id, e]));
 
 export function showTravelScreen() {
   const state = getState();
@@ -55,19 +59,23 @@ export function showTravelScreen() {
   paceSel.addEventListener('change', (e) => {
     setPace(e.target.value);
     render();
+    checkEvent();
   });
   rationSel.addEventListener('change', (e) => {
     setRations(e.target.value);
     render();
+    checkEvent();
   });
   main.querySelector('#travel-btn').addEventListener('click', () => {
     advanceDay();
     render();
+    checkEvent();
   });
   main.querySelector('#rest-btn').addEventListener('click', () => {
     const days = parseInt(prompt('Rest how many days?', '1'), 10) || 1;
     rest(days);
     render();
+    checkEvent();
   });
 
   function render() {
@@ -93,8 +101,24 @@ export function showTravelScreen() {
       logDiv.appendChild(p);
     });
     logDiv.scrollTop = logDiv.scrollHeight;
+
+    const disabled = !!s.activeEvent;
+    main.querySelector('#travel-btn').disabled = disabled;
+    main.querySelector('#rest-btn').disabled = disabled;
+  }
+
+  function checkEvent() {
+    const s = getState();
+    if (!s.activeEvent) return;
+    const ev = eventMap[s.activeEvent.id];
+    const stage = ev.stages.find((st, i) => (st.id ?? i) === s.activeEvent.stageId);
+    showEventModal(ev, stage, () => {
+      render();
+      checkEvent();
+    });
   }
 
   render();
+  checkEvent();
 }
 
