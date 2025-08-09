@@ -6,6 +6,7 @@ body {
   align-items: center;
   justify-content: center;
   background: #fff;
+  position: relative;
 }
 
 #title-screen {
@@ -51,4 +52,19 @@ button:focus {
   max-height: 150px;
   overflow-y: auto;
   padding: 0.5rem;
+}
+
+.img-slot {
+  display: inline-block;
+}
+
+.scene-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+.pixelated {
+  image-rendering: pixelated;
 }
