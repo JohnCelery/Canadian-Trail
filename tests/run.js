@@ -25,12 +25,17 @@ const {
   advanceDay,
   continueGame,
   getState,
-  setActiveEvent
+  setActiveEvent,
+  addLog
 } = GS;
 
 const EE = await import('../systems/eventEngine.js');
 const { eligibleEvents, pickWeighted, applyEffects, startEvent } = EE;
 import events from '../data/events.json' assert { type: 'json' };
+const LM = await import('../systems/landmarks.js');
+const { checkArrival, landmarks: lmData } = LM;
+const SH = await import('../systems/shop.js');
+const { priceAt, applyPurchase, applySell } = SH;
 
 // RNG determinism
 startNewGame('Farmer', 123);
@@ -116,6 +121,38 @@ const deathState = {
 applyEffects(deathState, [{ type: 'mortality', memberId: 'ros', epitaphKey: 'death_ros_snakebite' }], { log: () => {} });
 assert.strictEqual(deathState.party.length, 0, 'Mortality did not remove member');
 assert.strictEqual(deathState.epitaphs.ros, 'death_ros_snakebite', 'Epitaph not set');
+
+
+// landmark arrival
+const landState = { progress: { milesTraveled: 0, landmarkIndex: 0 } };
+let ar = checkArrival(landState);
+assert.ok(ar.arrived && ar.landmark.id === lmData[0].id, 'Initial landmark arrival failed');
+landState.progress.milesTraveled = 150;
+ar = checkArrival(landState);
+assert.ok(ar.arrived && ar.landmark.id === lmData[1].id, 'Second landmark arrival failed');
+
+// price inflation monotonic
+for (let i = 0; i < lmData.length - 1; i++) {
+  const p1 = priceAt(i, 10);
+  const p2 = priceAt(i + 1, 10);
+  assert.ok(p2 >= p1, 'Price should not decrease along trail');
+}
+
+// applyPurchase/applySell
+const shopState = { inventory: { money: 20, food: 0, bullets: 5 }, activeLandmark: { index: 0 } };
+applyPurchase(shopState, [{ id: 'food', qty: 10 }]);
+assert.strictEqual(shopState.inventory.food, 10, 'Purchase did not add items');
+assert.ok(shopState.inventory.money >= 0, 'Money went negative');
+applySell(shopState, [{ id: 'bullets', qty: 10 }]);
+assert.strictEqual(shopState.inventory.bullets, 0, 'Sell did not clamp inventory');
+
+// persistence of landmark index
+startNewGame('Farmer', 555);
+const ps = getState();
+ps.progress.landmarkIndex = 2;
+addLog('save'); // triggers save
+const loaded2 = continueGame();
+assert.strictEqual(loaded2.progress.landmarkIndex, 2, 'Landmark index not persisted');
 
 // save/load activeEvent
 startNewGame('Farmer', 999);
