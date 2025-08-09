@@ -1,1 +1,93 @@
-[]
+[
+  {
+    "id": "spring-storm",
+    "weight": 3,
+    "conditions": { "season": ["Spring"] },
+    "intro": "Spring winds carry dark clouds.",
+    "stages": [
+      {
+        "text": "Do you set camp or keep moving?",
+        "choices": [
+          { "id": "camp", "text": "Make camp", "next": "camp_wait" },
+          { "id": "move", "text": "Keep moving", "next": "move_on" }
+        ]
+      },
+      {
+        "id": "camp_wait",
+        "text": "You hunker down as the sky rumbles.",
+        "followupRoll": [
+          { "chance": 0.6, "effects": [{"type":"time","days":1}], "textOnRoll": "The storm passes overnight." },
+          { "chance": 0.4, "effects": [{"type":"inventory","key":"food","delta":-10},{"type":"health","target":"party","delta":-5}], "textOnRoll": "Rain floods the camp." }
+        ]
+      },
+      {
+        "id": "move_on",
+        "text": "The path grows muddy.",
+        "choices": [
+          { "id": "steady", "text": "Walk carefully", "effects": [{"type":"time","days":1}] },
+          { "id": "rush", "text": "Hurry through", "effects": [{"type":"health","target":"party","delta":-2}] }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "river-warning",
+    "weight": 2,
+    "conditions": { "season": ["Summer","Fall"] },
+    "intro": "A scout warns of swift river currents ahead.",
+    "stages": [
+      {
+        "text": "Do you heed the warning?",
+        "choices": [
+          { "id": "detour", "text": "Take a long detour", "effects": [{"type":"mapFlag","key":"riverDetour","value":true},{"type":"distance","delta":-15},{"type":"riskBuff","key":"riverAccident","value":"-10%"}] },
+          { "id": "ignore", "text": "Ignore it", "effects": [{"type":"riskBuff","key":"riverAccident","value":"+10%"}] }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mountain-trader",
+    "weight": 2,
+    "conditions": { "season": ["Summer","Fall"] },
+    "intro": "A wandering trader offers supplies.",
+    "stages": [
+      {
+        "text": "He'll swap 20 lbs of food for 10 bullets.",
+        "choices": [
+          { "id": "trade", "text": "Trade food", "effects": [{"type":"inventory","key":"food","delta":-20},{"type":"inventory","key":"bullets","delta":10}] },
+          { "id": "decline", "text": "Decline", "effects": [{"type":"morale","delta":-1}] }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "snake-in-grass",
+    "weight": 1,
+    "conditions": { "season": ["Summer"] },
+    "intro": "Ros spots something in the tall grass.",
+    "stages": [
+      {
+        "text": "A snake strikes at Ros.",
+        "choices": [
+          { "id": "help", "text": "Try to help", "effects": [{"type":"mortality","memberId":"ros","epitaphKey":"death_ros_snakebite"}] },
+          { "id": "run", "text": "Everyone runs", "effects": [{"type":"morale","delta":-2}] }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "river-mishap",
+    "weight": 1,
+    "conditions": { "season": ["Spring","Summer"] },
+    "intro": "Jess slips near the river bank.",
+    "stages": [
+      {
+        "text": "Do you grab her?",
+        "choices": [
+          { "id": "grab", "text": "Grab her", "effects": [{"type":"health","target":"member","memberId":"jess","delta":-20}] },
+          { "id": "tooSlow", "text": "Too slow!", "effects": [{"type":"mortality","memberId":"jess","epitaphKey":"death_jess_river"}] }
+        ]
+      }
+    ]
+  }
+]
