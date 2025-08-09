@@ -1,1 +1,6 @@
-[]
+[
+  {"id": "oxen", "name": "Oxen", "price": 40},
+  {"id": "food", "name": "Food", "price": 0.2},
+  {"id": "clothes", "name": "Clothes", "price": 10},
+  {"id": "bullets", "name": "Bullets", "price": 2}
+]

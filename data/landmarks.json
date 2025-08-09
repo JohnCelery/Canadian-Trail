@@ -1,1 +1,7 @@
-[]
+[
+  {"mile": 0, "name": "Fort McPherson"},
+  {"mile": 120, "name": "Red River"},
+  {"mile": 300, "name": "Fort Edmonton"},
+  {"mile": 550, "name": "Rocky Pass"},
+  {"mile": 800, "name": "Pacific Camp"}
+]
