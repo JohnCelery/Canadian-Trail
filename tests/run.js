@@ -36,6 +36,8 @@ const LM = await import('../systems/landmarks.js');
 const { checkArrival, landmarks: lmData } = LM;
 const SH = await import('../systems/shop.js');
 const { priceAt, applyPurchase, applySell } = SH;
+const RV = await import('../systems/river.js');
+const { computeCrossingOdds, resolveCrossing } = RV;
 
 // RNG determinism
 startNewGame('Farmer', 123);
@@ -163,5 +165,42 @@ const stageId = state.activeEvent.stageId;
 const resumed = continueGame();
 assert.ok(resumed.activeEvent, 'Active event not persisted');
 assert.strictEqual(resumed.activeEvent.stageId, stageId, 'Active event stage mismatch');
+
+// computeCrossingOdds monotonicity
+const oddsShallow = computeCrossingOdds({ weather: 'Clear', risks: {} }, { depthFt: 2, widthFt: 200 });
+const oddsDeep = computeCrossingOdds({ weather: 'Clear', risks: {} }, { depthFt: 5, widthFt: 200 });
+assert.ok(oddsDeep.ford <= oddsShallow.ford, 'Ford odds increased with depth');
+assert.ok(oddsDeep.caulk <= oddsShallow.caulk, 'Caulk odds increased with depth');
+const oddsWide = computeCrossingOdds({ weather: 'Clear', risks: {} }, { depthFt: 2, widthFt: 300 });
+assert.ok(oddsWide.ford < oddsShallow.ford, 'Ford width penalty missing');
+assert.ok(Math.abs(oddsWide.ferry - oddsShallow.ferry) < 0.05, 'Ferry modifier too large');
+
+// resolveCrossing statistical success ~25%
+const rngStat = (() => { let s = 1; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; })();
+let successes = 0;
+for (let i = 0; i < 100; i++) {
+  const r = resolveCrossing({ inventory: { food: 100, spare_parts: 1, clothes: 1, oxen: 1 }, party: [{}] }, 'ford', { ford: 0.25 }, { depthFt: 3, widthFt: 200 }, rngStat);
+  if (r.success) successes++;
+}
+assert.ok(successes > 15 && successes < 35, 'Success rate not ~25%');
+
+// guard rails money/inventory non-negative
+const guardState = { inventory: { money: 3, food: 5, clothes: 0, spare_parts: 0, oxen: 0 }, party: [{}], date: '1848-03-01', day: 1, season: 'Spring', milesTraveled: 0, milesRemaining: 0 };
+const guardOdds = { ferry: 0 };
+const guardRes = resolveCrossing(guardState, 'ferry', guardOdds, { ferryFee: 10, depthFt: 1, widthFt: 100, hasFerry: true }, () => 1);
+applyEffects(guardState, guardRes.effects, { log: () => {}, rng: () => 0 });
+assert.ok(guardState.inventory.money >= 0, 'Money went negative');
+assert.ok(Object.values(guardState.inventory).every((v) => v >= 0), 'Inventory went negative');
+
+// mortality random epitaph
+const mortState = { inventory: { food: 100, clothes: 2, oxen: 2 }, party: [{ id: 'a', name: 'A', health: 100, statuses: [] }, { id: 'b', name: 'B', health: 100, statuses: [] }], epitaphs: {}, date: '1848-03-01', day: 1, season: 'Spring', milesTraveled: 0, milesRemaining: 0 };
+const seq = [0.99, 0, 0, 0, 0, 0, 0.05, 0];
+let idx = 0;
+const rngSeq = () => seq[idx++];
+const mortRes = resolveCrossing(mortState, 'ford', { ford: 0 }, { depthFt: 5, widthFt: 400 }, rngSeq);
+applyEffects(mortState, mortRes.effects, { log: () => {}, rng: () => 0 });
+assert.strictEqual(mortState.party.length, 1, 'Mortality did not remove member');
+const deadId = Object.keys(mortState.epitaphs)[0];
+assert.strictEqual(mortState.epitaphs[deadId], `death_${deadId}_river`, 'Epitaph key wrong');
 
 console.log('All tests passed.');
