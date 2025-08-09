@@ -1,4 +1,4 @@
-# Frontier Run (working title)
+# Canadian Trail (working title)
 
 A web-based, day-by-day pioneer journey inspired by the classic Oregon Trail loop—**travel → events → shops → rivers → hunting**—with similar flow, pacing, and difficulty, but entirely new text, UI, and art.
 
