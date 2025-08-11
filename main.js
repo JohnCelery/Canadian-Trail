@@ -1,9 +1,11 @@
 import { startNewGame, continueGame } from './state/GameState.js';
 import { showTravelScreen } from './ui/TravelScreen.js';
 import { loadAssets, getImage, getMeta } from './systems/assets.js';
+import { loadJSON } from './systems/jsonLoader.js';
 
 async function init() {
-  await loadAssets('data/manifest.json');
+  const manifest = await loadJSON('./data/manifest.json', import.meta.url);
+  await loadAssets(manifest);
 
   const bgContainer = document.getElementById('title-bg');
   const bgImg = getImage('scenes.title');
@@ -32,4 +34,20 @@ async function init() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', init);
+function showInitError(e) {
+  console.error(e);
+  const banner = document.createElement('div');
+  banner.textContent = 'Failed to initialize: ' + e.message;
+  banner.style.position = 'fixed';
+  banner.style.top = '0';
+  banner.style.left = '0';
+  banner.style.right = '0';
+  banner.style.background = 'red';
+  banner.style.color = 'white';
+  banner.style.padding = '0.5em';
+  document.body.appendChild(banner);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  init().catch(showInitError);
+});

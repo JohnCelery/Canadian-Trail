@@ -1,6 +1,7 @@
 import { travelDay, restDay } from '../systems/travel.js';
 import { eligibleEvents, pickWeighted, startEvent as engineStartEvent, applyEffects, nextStage as engineNextStage } from '../systems/eventEngine.js';
-import events from '../data/events.json' assert { type: 'json' };
+import { loadJSON } from '../systems/jsonLoader.js';
+const events = await loadJSON('../data/events.json', import.meta.url);
 
 import { checkArrival, landmarks } from "../systems/landmarks.js";
 

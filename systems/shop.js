@@ -1,5 +1,6 @@
-import items from '../data/items.json' assert { type: 'json' };
+import { loadJSON } from './jsonLoader.js';
 import { landmarks } from './landmarks.js';
+export const items = await loadJSON('../data/items.json', import.meta.url);
 
 const itemsById = Object.fromEntries(items.map(i => [i.id, i]));
 const totalLandmarks = landmarks.length;
@@ -59,4 +60,3 @@ export function applySell(state, cart, log = () => {}) {
   }
 }
 
-export { items };

@@ -31,7 +31,8 @@ const {
 
 const EE = await import('../systems/eventEngine.js');
 const { eligibleEvents, pickWeighted, applyEffects, startEvent } = EE;
-import events from '../data/events.json' assert { type: 'json' };
+import { loadJSON } from '../systems/jsonLoader.js';
+const events = await loadJSON('../data/events.json', import.meta.url);
 const LM = await import('../systems/landmarks.js');
 const { checkArrival, landmarks: lmData } = LM;
 const SH = await import('../systems/shop.js');
