@@ -1,6 +1,7 @@
 import { getState, setPace, setRations, advanceDay, rest } from '../state/GameState.js';
 import { showEventModal } from './EventModal.js';
-import events from '../data/events.json' assert { type: 'json' };
+import { loadJSON } from '../systems/jsonLoader.js';
+const events = await loadJSON('../data/events.json', import.meta.url);
 import { getNextLandmark, milesToNext, landmarks } from "../systems/landmarks.js";
 import { showLandmarkScreen } from "./LandmarkScreen.js";
 import { getImage, getMeta } from '../systems/assets.js';

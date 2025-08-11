@@ -1,14 +1,6 @@
 export const AssetRegistry = { images: {} };
 
-export async function loadAssets(manifestPath = 'data/manifest.json') {
-  let manifest;
-  try {
-    const res = await fetch(manifestPath);
-    manifest = await res.json();
-  } catch (err) {
-    console.error('Failed to load manifest', err);
-    return;
-  }
+export async function loadAssets(manifest) {
   const dpr = window.devicePixelRatio || 1;
   for (const [category, entries] of Object.entries(manifest)) {
     AssetRegistry.images[category] = {};

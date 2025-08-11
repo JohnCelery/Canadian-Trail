@@ -1,4 +1,5 @@
-import landmarks from '../data/landmarks.json' assert { type: 'json' };
+import { loadJSON } from './jsonLoader.js';
+export const landmarks = await loadJSON('../data/landmarks.json', import.meta.url);
 
 export function getNextLandmark(state) {
   return landmarks[state.progress.landmarkIndex] || null;
@@ -20,4 +21,3 @@ export function checkArrival(state) {
   return { arrived: false, landmark: null, index };
 }
 
-export { landmarks };
