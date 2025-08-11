@@ -1,6 +1,6 @@
 import { startNewGame, continueGame } from './state/GameState.js';
 import { showTravelScreen } from './ui/TravelScreen.js';
-import { loadAssets, getImage, getMeta } from './systems/assets.js';
+import { loadJSON, showInitError } from './systems/jsonLoader.js';
 import { loadJSON } from './systems/jsonLoader.js';
 
 async function init() {
