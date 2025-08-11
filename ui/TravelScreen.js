@@ -1,12 +1,18 @@
 import { getState, setPace, setRations, advanceDay, rest } from '../state/GameState.js';
 import { showEventModal } from './EventModal.js';
-import { loadJSON } from '../systems/jsonLoader.js';
-const events = await loadJSON('../data/events.json', import.meta.url);
-import { getNextLandmark, milesToNext, landmarks } from "../systems/landmarks.js";
-import { showLandmarkScreen } from "./LandmarkScreen.js";
+import { getNextLandmark, milesToNext, landmarks } from '../systems/landmarks.js';
 import { getImage, getMeta } from '../systems/assets.js';
 
-const eventMap = Object.fromEntries(events.map((e) => [e.id, e]));
+// Lazy-load events only when needed (avoids blocking boot)
+let eventMapPromise = null;
+async function getEventMap() {
+  if (!eventMapPromise) {
+    const { loadJSON } = await import('../systems/jsonLoader.js');
+    const events = await loadJSON('../data/events.json', import.meta.url);
+    eventMapPromise = Object.fromEntries(events.map((e) => [e.id, e]));
+  }
+  return eventMapPromise;
+}
 
 export function showTravelScreen() {
   const state = getState();
@@ -88,24 +94,24 @@ export function showTravelScreen() {
   paceSel.addEventListener('change', (e) => {
     setPace(e.target.value);
     render();
-    checkEvent();
+    void checkEvent();
   });
   rationSel.addEventListener('change', (e) => {
     setRations(e.target.value);
     render();
-    checkEvent();
+    void checkEvent();
   });
   main.querySelector('#travel-btn').addEventListener('click', () => {
     advanceDay();
     render();
-    checkEvent();
+    void checkEvent();
     checkLandmark();
   });
   main.querySelector('#rest-btn').addEventListener('click', () => {
     const days = parseInt(prompt('Rest how many days?', '1'), 10) || 1;
     rest(days);
     render();
-    checkEvent();
+    void checkEvent();
     checkLandmark();
   });
 
@@ -145,22 +151,24 @@ export function showTravelScreen() {
     main.querySelector('#rest-btn').disabled = disabled;
   }
 
-  function checkEvent() {
+  async function checkEvent() {
     const s = getState();
     if (!s.activeEvent) return;
-    const ev = eventMap[s.activeEvent.id];
+    const map = await getEventMap();
+    const ev = map[s.activeEvent.id];
+    if (!ev) return;
     const stage = ev.stages.find((st, i) => (st.id ?? i) === s.activeEvent.stageId);
     showEventModal(ev, stage, () => {
       render();
-      checkEvent();
+      void checkEvent();
     });
   }
 
   function checkLandmark() {
     const s = getState();
     if (!s.activeLandmark) return;
-    if (document.getElementById("landmark-modal")) return;
-    const lm = landmarks.find(l => l.id === s.activeLandmark.id);
+    if (document.getElementById('landmark-modal')) return;
+    const lm = landmarks.find((l) => l.id === s.activeLandmark.id);
     if (lm) {
       showLandmarkScreen({ ...lm, index: s.activeLandmark.index }, () => {
         render();
@@ -169,6 +177,6 @@ export function showTravelScreen() {
   }
 
   render();
-  checkEvent();
+  void checkEvent();
   checkLandmark();
 }
